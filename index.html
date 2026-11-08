@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>FF PANEL PRO — Tech Intercept</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{--g:#00ff88;--b:#00aaff;--bg:#050608;--ln:#12233a;--w:#e9eef2}
+  body{font-family:'Segoe UI',system-ui,monospace;background:var(--bg);color:var(--w);min-height:100vh;
+    background-image:linear-gradient(rgba(0,255,136,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,.05) 1px,transparent 1px);
+    background-size:34px 34px;overflow-x:hidden}
+
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:8px;flex-wrap:wrap;
+    background:linear-gradient(90deg,#000,#061a12,#001a2a);border-bottom:2px solid var(--g);box-shadow:0 0 22px #00ff8855;position:sticky;top:0;z-index:50}
+  .logo{font-weight:800;letter-spacing:2px;font-size:17px}
+  .logo span{color:var(--g);text-shadow:0 0 10px var(--g)}
+  .logo b{color:var(--b);text-shadow:0 0 10px var(--b)}
+  #clock{font-family:monospace;font-size:13px;color:var(--b)}
+  #timerBox{font-family:monospace;font-size:13px;color:var(--g)}
+
+  .hero{position:relative;max-width:1100px;margin:14px auto;border-radius:14px;overflow:hidden;border:1px solid var(--ln)}
+  .hero img{width:100%;height:190px;object-fit:cover;filter:grayscale(.45) contrast(1.12) brightness(.6)}
+  .hero .cap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 26px;
+    background:linear-gradient(90deg,#000d,#0000 70%)}
+  .hero .cap h1{font-size:25px;letter-spacing:2px}
+  .hero .cap h1 span{color:var(--g)}
+  .hero .cap p{color:var(--b);font-size:13px;margin-top:6px}
+
+  /* FAB — LUÔN HIỆN */
+  #fab{position:fixed;right:18px;bottom:18px;width:68px;height:68px;border-radius:50%;z-index:99999;
+    background:radial-gradient(circle at 30% 30%,#0f8,#026);color:#fff;font-weight:800;font-size:11px;line-height:1.1;
+    border:2px solid var(--b);box-shadow:0 0 26px var(--g);cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;animation:pulse 1.7s infinite}
+  #fab:active{transform:scale(.92)}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+
+  #panel{position:fixed;top:0;right:0;width:372px;max-width:95vw;height:100vh;background:#07090cf5;backdrop-filter:blur(9px);
+    border-left:2px solid var(--g);transform:translateX(106%);transition:.34s cubic-bezier(.3,.9,.3,1);z-index:99998;
+    overflow-y:auto;padding:14px;box-shadow:-14px 0 44px #00ff8833}
+  #panel.open{transform:translateX(0)}
+  .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:sticky;top:0;background:#07090cf5;padding:6px 0;z-index:3}
+  .ph h2{font-size:13px;color:var(--g);letter-spacing:1.5px}
+  #closeBtn{background:#210;color:#ff5a5a;border:1px solid #ff5a5a;border-radius:6px;padding:5px 11px;cursor:pointer;font-weight:700}
+
+  .idbox{border:1px solid var(--b);border-radius:10px;padding:10px;margin-bottom:12px;background:#001018}
+  .idbox label{font-size:11px;color:var(--b);letter-spacing:1px;display:block;margin-bottom:5px}
+  .idrow{display:flex;gap:6px}
+  .idrow input{flex:1;background:#000;color:var(--g);border:1px solid var(--ln);border-radius:6px;padding:8px;font-size:13px;font-family:monospace}
+  .idrow button{background:var(--b);color:#000;border:none;border-radius:6px;padding:0 13px;font-weight:800;cursor:pointer}
+  .idrow button:active{opacity:.8}
+
+  .section{border:1px solid var(--ln);border-radius:11px;padding:10px;margin-bottom:11px;background:linear-gradient(180deg,#000,#04101a)}
+  .section h3{font-size:11px;color:var(--b);letter-spacing:1.6px;margin-bottom:8px;text-transform:uppercase;border-left:3px solid var(--g);padding-left:8px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+  .switch{position:relative;width:46px;height:22px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:#1c2430;border-radius:22px;cursor:pointer;transition:.22s;border:1px solid #2c3a4a}
+  .slider:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:#5a6a7a;border-radius:50%;transition:.22s}
+  .switch input:checked + .slider{background:var(--g);box-shadow:0 0 12px var(--g)}
+  .switch input:checked + .slider:before{transform:translateX(24px);background:#000}
+
+  .rng{margin:7px 0}
+  .rng label{font-size:11px;color:#9fb}
+  .rng .val{color:var(--g);float:right;font-family:monospace}
+  input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:#0c1722;border-radius:6px;margin-top:5px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--g);box-shadow:0 0 10px var(--g);cursor:pointer}
+
+  .fps-btns{display:flex;gap:6px;margin-top:7px}
+  .fps-btns button{flex:1;background:#001018;color:var(--b);border:1px solid var(--b);border-radius:7px;padding:7px;cursor:pointer;font-weight:700;font-size:12px}
+  .fps-btns button.active{background:var(--b);color:#000;box-shadow:0 0 12px var(--b)}
+
+  .big{width:100%;padding:11px;border-radius:9px;border:1px solid var(--g);background:linear-gradient(90deg,#00291a,#001524);
+    color:var(--g);font-weight:800;letter-spacing:.6px;cursor:pointer;font-size:12.5px;margin-top:8px;box-shadow:0 0 13px #00ff8844}
+  .big:active{background:var(--g);color:#000}
+  .big.blue{border-color:var(--b);color:var(--b);box-shadow:0 0 13px #00aaff44;background:linear-gradient(90deg,#001526,#001018)}
+  .big.blue:active{background:var(--b);color:#000}
+
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#444;margin-right:6px}
+  .dot.on{background:var(--g);box-shadow:0 0 8px var(--g)}
+
+  .acc{font-size:12px;line-height:1.75}
+  .acc .k{color:var(--b)}
+  .acc .v{color:var(--g);word-break:break-all}
+  .acc .pwd{display:flex;gap:6px;align-items:center}
+  .acc .pwd button{background:#0a0f14;color:var(--b);border:1px solid var(--b);border-radius:5px;padding:1px 7px;font-size:11px;cursor:pointer}
+
+  .hint{font-size:10px;color:#5d6c7a;margin-top:5px;line-height:1.5}
+  .hint b{color:var(--g)}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#00130c;border:1px solid var(--g);
+    color:var(--g);padding:10px 16px;border-radius:9px;font-size:12.5px;font-weight:700;opacity:0;transition:.3s;z-index:99999;pointer-events:none;box-shadow:0 0 20px #00ff8855;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  #triggerArea{max-width:1100px;margin:14px auto;border:1px dashed #00ff8855;border-radius:12px;padding:14px;text-align:center;
+    color:var(--b);font-size:12px;background:#00000066;cursor:pointer;user-select:none}
+  #triggerArea b{color:var(--g)}
+  #triggerArea .cnt{font-family:monospace;color:var(--g);font-size:15px}
+
+  footer{text-align:center;padding:22px;font-size:11px;color:#4a5a66;line-height:1.6}
+  footer span{color:var(--g)}
+  .off{opacity:.4;pointer-events:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>FF</span> <b>PANEL</b> PRO</div>
+  <div id="clock"></div>
+  <div id="timerBox">⏱ <span id="timer">03:00:00</span></div>
+</header>
+
+<div class="hero">
+  <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=70" alt="game">
+  <div class="cap"><h1>FREE FIRE <span>INTERCEPT</span></h1><p>Proxy · Diệt ID · Aimbot · ESP · Antibank</p></div>
+</div>
+
+<div id="triggerArea">👆 Chạm <b>4 lần</b> để mở/đóng menu nhanh · chạm: <span class="cnt" id="tapCnt">0</span>/4</div>
+
+<button id="fab">MENU<br>FF</button>
+<div class="toast" id="toast"></div>
+
+<div id="panel">
+  <div class="ph"><h2>⚙ CẤU HÌNH CAN THIỆP</h2><button id="closeBtn">✕</button></div>
+
+  <div class="idbox">
+    <label>🆔 NHẬP ID GAME (Free Fire)</label>
+    <div class="idrow">
+      <input id="gameId" inputmode="numeric" placeholder="VD: 123456789">
+      <button id="connectBtn">KẾT NỐI</button>
+    </div>
+    <div class="hint" id="connState">Chưa kết nối — nhập ID rồi bấm KẾT NỐI.</div>
+  </div>
+
+  <div class="section">
+    <h3><span class="dot" id="dotProxy"></span>Proxy / Diệt ID</h3>
+    <div class="row"><span>Bật Proxy can thiệp</span><label class="switch"><input type="checkbox" id="proxySw"><span class="slider"></span></label></div>
+    <div class="row"><span>Diệt ID Free Fire</span><label class="switch"><input type="checkbox" id="diIdSw"><span class="slider"></span></label></div>
+    <div class="hint">Tạo file thật: <b>proxypin</b> · <b>proxy</b> · <b>app happ</b></div>
+    <button class="big blue" id="genAll">⬇ TẠO FILE PROXY / PIN / HAPP</button>
+  </div>
+
+  <div class="section">
+    <h3>🎯 AIM HỆ THỐNG</h3>
+    <div class="row"><span>Aimbot</span><label class="switch"><input type="checkbox" id="aimbot"><span class="slider"></span></label></div>
+    <div class="row"><span>Aimlock</span><label class="switch"><input type="checkbox" id="aimlock"><span class="slider"></span></label></div>
+    <div class="row"><span>Aim cổ</span><label class="switch"><input type="checkbox" id="aimco"><span class="slider"></span></label></div>
+    <div class="row"><span>Aim body</span><label class="switch"><input type="checkbox" id="aimbody"><span class="slider"></span></label></div>
+    <div class="row"><span>Aim thường</span><label class="switch"><input type="checkbox" id="aimthuong"><span class="slider"></span></label></div>
+    <div class="row"><span>Bỏ rung tâm / nhẹ tâm</span><label class="switch"><input type="checkbox" id="rung"><span class="slider"></span></label></div>
+    <div class="rng"><label>Ghim đầu <span class="val" id="vHead">50%</span></label><input type="range" id="rHead" min="1" max="100" value="50"></div>
+    <div class="rng"><label>Kéo tâm <span class="val" id="vPull
